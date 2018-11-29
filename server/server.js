@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
+const {generateMessage} = require('./utils/message');
 
 const port = process.env.PORT || 3000;
 
@@ -17,18 +18,10 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.emit('newMessage', {
-        from: 'admin',
-        text: 'Welcome to the chat app!',
-        createdAt: new Date().toISOString()
-    });
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat App'));
 
     //broadcast.emit will broadcast to other clients, except the client sending it.
-    socket.broadcast.emit('newMessage', {
-        from: 'admin',
-        text: 'New user joined',
-        createdAt: new Date().toISOString()
-    });
+    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
     socket.on('disconnect', () => {
         console.log('User was disconnected');
@@ -37,11 +30,7 @@ io.on('connection', (socket) => {
 
     socket.on('createMessage', (msg) => {
         console.log('createMessage', msg);
-        io.emit('newMessage', {
-            from: msg.from,
-            text: msg.text,
-            createdAt: new Date().toISOString()
-        })
+        io.emit('newMessage', generateMessage(msg.from, msg.text));
     });
 });
 
