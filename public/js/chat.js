@@ -3,18 +3,27 @@ var socket = io();
 socket.on('connect', function () {
     console.log('Connected to server');
 
-    // socket.emit('createMessage', {
+    // socket.emit('sendMessage', {
     //     to: 'client-1@example.com',
     //     text: 'Hey, This is client-1'
     // });
+});
+
+socket.on('countUpdated', (count) => {
+    console.log('The count has been updated!', count);
+});
+
+document.querySelector('#increment').addEventListener('click', () => {
+    console.log('Clicked');
+    socket.emit('increment');
 });
 
 socket.on('disconnect', function () {
     console.log('Disconnected from server');
 });
 
-socket.on('newMessage', (message) => {
-    console.log('newMessage', message);
+socket.on('message', (message) => {
+    console.log('message', message);
     var li = jQuery('<li></li>');
     li.text(`${message.from}: ${message.text}`);
 
@@ -31,25 +40,25 @@ socket.on('newLocationMessage', (message) => {
     jQuery('#messages').append(li);
 });
 
-jQuery('#message-form').on('submit', function(e) {
-    e.preventDefault();
+document.querySelector('#message-form').addEventListener('submit', (e) => {
+    e.preventDefault(); //Prevent full page refresh.
 
-    socket.emit('createMessage', {
+    socket.emit('sendMessage', {
         from: 'User',
-        text: jQuery('[name=message]').val()
+        text: e.target.elements.message.value
     }, function() {
 
     });
 });
 
-var locationButton = jQuery('#send-location');
-locationButton.on('click', () => {
+
+document.querySelector('#send-location').addEventListener('click', () => {
     if (!navigator.geolocation) {
         return alert('Geolocation not supported by your browser.');
     }
-    navigator.geolocation.getCurrentPosition(function (position) {
+    navigator.geolocation.getCurrentPosition((position) => {
         console.log(position);
-        socket.emit('createLocationMessage', {
+        socket.emit('sendLocation', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
         });

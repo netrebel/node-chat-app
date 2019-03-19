@@ -15,26 +15,35 @@ var io = socketIO(server);
 
 app.use(express.static(publicPath));
 
+let count = 0;
+
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat App'));
+    socket.emit('countUpdated', count);
+
+    socket.on('increment', () => {
+        count++;
+        io.emit('countUpdated', count); //Emit to all connetions
+    });
+
+    socket.emit('message', generateMessage('Admin', 'Welcome to the chat App'));
 
     //broadcast.emit will broadcast to other clients, except the client sending it.
-    socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+    socket.broadcast.emit('message', generateMessage('Admin', 'New user joined'));
 
     socket.on('disconnect', () => {
         console.log('User was disconnected');
 
     });
 
-    socket.on('createMessage', (msg, callback) => {
-        console.log('createMessage', msg);
-        io.emit('newMessage', generateMessage(msg.from, msg.text));
+    socket.on('sendMessage', (msg, callback) => {
+        console.log('sendMessage', msg);
+        io.emit('message', generateMessage(msg.from, msg.text));
         callback('I see you');
     });
 
-    socket.on('createLocationMessage', (coords) => {
+    socket.on('sendLocation', (coords) => {
         console.log(coords);
         io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
     });
