@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 const {generateMessage, generateLocationMessage} = require('./utils/message');
+const Filter = require('bad-words');
 
 const port = process.env.PORT || 3000;
 
@@ -38,14 +39,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('sendMessage', (msg, callback) => {
+        const filter = new Filter();
+        if (filter.isProfane(msg.text)) {
+            return callback('Profanity is not allowed!');
+        }
         console.log('sendMessage', msg);
         io.emit('message', generateMessage(msg.from, msg.text));
-        callback('I see you');
+        callback();
     });
 
-    socket.on('sendLocation', (coords) => {
+    socket.on('sendLocation', (coords, callback) => {
         console.log(coords);
         io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        callback();
     });
 });
 

@@ -43,11 +43,16 @@ socket.on('newLocationMessage', (message) => {
 document.querySelector('#message-form').addEventListener('submit', (e) => {
     e.preventDefault(); //Prevent full page refresh.
 
+    const message = e.target.elements.message.value;
+
     socket.emit('sendMessage', {
         from: 'User',
-        text: e.target.elements.message.value
-    }, function() {
-
+        text: message
+    }, (error) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log('Message delivered');
     });
 });
 
@@ -61,8 +66,10 @@ document.querySelector('#send-location').addEventListener('click', () => {
         socket.emit('sendLocation', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
+        }, (err) => {
+            console.log('Location shared!');
         });
-    }, function() {
+    }, () => {
         alert('unable to share location');
     });
 });
