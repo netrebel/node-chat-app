@@ -13,11 +13,6 @@ socket.on('countUpdated', (count) => {
     console.log('The count has been updated!', count);
 });
 
-document.querySelector('#increment').addEventListener('click', () => {
-    console.log('Clicked');
-    socket.emit('increment');
-});
-
 socket.on('disconnect', function () {
     console.log('Disconnected from server');
 });
@@ -26,15 +21,21 @@ socket.on('disconnect', function () {
 const $messageForm = document.querySelector('#message-form');
 const $messageFromInput = $messageForm.querySelector('input');
 const $messageFormButton = $messageForm.querySelector('button');
-
 const $sendLocationButton = document.querySelector('#send-location');
+const $messages = document.querySelector('#messages');
+
+// Templates
+const messageTemplate = document.querySelector('#message-template').innerHTML;
 
 socket.on('message', (message) => {
     console.log('message', message);
-    var li = jQuery('<li></li>');
-    li.text(`${message.from}: ${message.text}`);
-
-    jQuery('#messages').append(li);
+    
+    //use the same key property as used in the template in the html ({{message}})
+    const html = Mustache.render(messageTemplate, {
+        message: message.text,
+        user: message.from
+    });
+    $messages.insertAdjacentHTML('beforeend', html);
 });
 
 socket.on('newLocationMessage', (message) => {
