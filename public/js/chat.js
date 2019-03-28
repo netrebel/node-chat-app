@@ -26,6 +26,7 @@ const $messages = document.querySelector('#messages');
 
 // Templates
 const messageTemplate = document.querySelector('#message-template').innerHTML;
+const locationTemplate = document.querySelector('#location-template').innerHTML;
 
 socket.on('message', (message) => {
     console.log('message', message);
@@ -38,14 +39,11 @@ socket.on('message', (message) => {
     $messages.insertAdjacentHTML('beforeend', html);
 });
 
-socket.on('newLocationMessage', (message) => {
-    var li = jQuery('<li></li>');
-    var a = jQuery('<a target="_blank">My current location</a>');
-
-    li.text(`${message.from}: `);
-    a.attr('href', message.url);
-    li.append(a);
-    jQuery('#messages').append(li);
+socket.on('locationMessage', (message) => {
+    const html = Mustache.render(locationTemplate, {
+        url: message.url
+    });
+    $messages.insertAdjacentHTML('beforeend', html);
 });
 
 $messageForm.addEventListener('submit', (e) => {

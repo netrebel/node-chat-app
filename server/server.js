@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
 
     socket.on('sendLocation', (coords, callback) => {
         console.log(coords);
-        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        io.emit('locationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
         callback();
     });
 });
