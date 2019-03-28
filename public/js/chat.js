@@ -25,14 +25,16 @@ socket.on('message', (message) => {
     //use the same key property as used in the template in the html ({{message}})
     const html = Mustache.render(messageTemplate, {
         message: message.text,
-        user: message.from
+        user: message.from,
+        createdAt: moment(message.createdAt).format('h:mm:ss a') //momentjs is already loaded in index.html
     });
     $messages.insertAdjacentHTML('beforeend', html);
 });
 
 socket.on('locationMessage', (message) => {
     const html = Mustache.render(locationTemplate, {
-        url: message.url
+        url: message.url,
+        createdAt: moment(message.createdAt).format('h:mm:ss a')
     });
     $messages.insertAdjacentHTML('beforeend', html);
 });
