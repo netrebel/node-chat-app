@@ -21,13 +21,6 @@ let count = 0;
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.emit('countUpdated', count);
-
-    socket.on('increment', () => {
-        count++;
-        io.emit('countUpdated', count); //Emit to all connetions
-    });
-
     socket.emit('message', generateMessage('Admin', 'Welcome to the chat App'));
 
     //broadcast.emit will broadcast to other clients, except the client sending it.

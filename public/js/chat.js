@@ -2,15 +2,6 @@ var socket = io();
 
 socket.on('connect', function () {
     console.log('Connected to server');
-
-    // socket.emit('sendMessage', {
-    //     to: 'client-1@example.com',
-    //     text: 'Hey, This is client-1'
-    // });
-});
-
-socket.on('countUpdated', (count) => {
-    console.log('The count has been updated!', count);
 });
 
 socket.on('disconnect', function () {
