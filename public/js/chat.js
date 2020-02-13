@@ -19,9 +19,12 @@ const $messages = document.querySelector('#messages');
 const messageTemplate = document.querySelector('#message-template').innerHTML;
 const locationTemplate = document.querySelector('#location-template').innerHTML;
 
+//Options (from chat.html qs.min.js Query String library)
+const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true });
+
 socket.on('message', (message) => {
     console.log('message', message);
-    
+
     //use the same key property as used in the template in the html ({{message}})
     const html = Mustache.render(messageTemplate, {
         message: message.text,
@@ -84,3 +87,5 @@ $sendLocationButton.addEventListener('click', () => {
         alert('unable to share location');
     });
 });
+
+socket.emit('join', { username, room } );

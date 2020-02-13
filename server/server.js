@@ -2,7 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
-const {generateMessage, generateLocationMessage} = require('./utils/message');
+const { generateMessage, generateLocationMessage } = require('./utils/message');
 const Filter = require('bad-words');
 
 const port = process.env.PORT || 3000;
@@ -21,14 +21,19 @@ let count = 0;
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.emit('message', generateMessage('Admin', 'Welcome to the chat App'));
+    socket.on('join', ({ username, room }) => {
+        socket.join(room);
 
-    //broadcast.emit will broadcast to other clients, except the client sending it.
-    socket.broadcast.emit('message', generateMessage('Admin', 'New user joined'));
+        socket.emit('message', generateMessage('Welcome!'));
+        //broadcast.emit will broadcast to other clients, except the client sending it.
+        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined!`));
+
+        //io.to.emit --> Emits an event to everybody in a specific room
+        //socket.broadcast.to.emit --> Emits an event to everybody in a specific room, except for the specific client.
+    });
 
     socket.on('disconnect', () => {
         console.log('User was disconnected');
-
     });
 
     socket.on('sendMessage', (msg, callback) => {
@@ -37,7 +42,7 @@ io.on('connection', (socket) => {
             return callback('Profanity is not allowed!');
         }
         console.log('sendMessage', msg);
-        io.emit('message', generateMessage(msg.from, msg.text));
+        io.to('Center City').emit('message', generateMessage(msg.from, msg.text));
         callback();
     });
 
