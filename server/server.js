@@ -4,6 +4,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 const { generateMessage, generateLocationMessage } = require('./utils/message');
 const Filter = require('bad-words');
+const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users');
 
 const port = process.env.PORT || 3000;
 
@@ -21,19 +22,31 @@ let count = 0;
 io.on('connection', (socket) => {
     console.log('New user connected');
 
-    socket.on('join', ({ username, room }) => {
-        socket.join(room);
+    socket.on('join', ({ username, room }, callback) => {
+        console.log('add user: ' + socket.id)
+        const { error, user } = addUser({ id: socket.id, username, room })
+
+        if (error) {
+            return callback(error)
+        }
+
+        socket.join(user.room);
 
         socket.emit('message', generateMessage('Welcome!'));
         //broadcast.emit will broadcast to other clients, except the client sending it.
-        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined!`));
+        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} has joined!`));
+
+        callback();
 
         //io.to.emit --> Emits an event to everybody in a specific room
         //socket.broadcast.to.emit --> Emits an event to everybody in a specific room, except for the specific client.
     });
 
     socket.on('disconnect', () => {
-        console.log('User was disconnected');
+        const user = removeUser(socket.id);
+        if (user) {
+            io.to(user.room).emit('message', generateMessage(`${user.username} has left!`));
+        }
     });
 
     socket.on('sendMessage', (msg, callback) => {
