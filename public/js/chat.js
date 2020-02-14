@@ -28,7 +28,7 @@ socket.on('message', (message) => {
     //use the same key property as used in the template in the html ({{message}})
     const html = Mustache.render(messageTemplate, {
         message: message.text,
-        user: message.from,
+        user: message.username,
         createdAt: moment(message.createdAt).format('h:mm:ss a') //momentjs is already loaded in index.html
     });
     $messages.insertAdjacentHTML('beforeend', html);
@@ -36,6 +36,7 @@ socket.on('message', (message) => {
 
 socket.on('locationMessage', (message) => {
     const html = Mustache.render(locationTemplate, {
+        username: message.username,
         url: message.url,
         createdAt: moment(message.createdAt).format('h:mm:ss a')
     });
@@ -51,7 +52,6 @@ $messageForm.addEventListener('submit', (e) => {
     const message = e.target.elements.message.value;
 
     socket.emit('sendMessage', {
-        from: 'User',
         text: message
     }, (error) => {
         $messageFormButton.removeAttribute('disabled'); //re-enable

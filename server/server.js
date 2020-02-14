@@ -20,10 +20,8 @@ app.use(express.static(publicPath));
 let count = 0;
 
 io.on('connection', (socket) => {
-    console.log('New user connected');
-
     socket.on('join', ({ username, room }, callback) => {
-        console.log('add user: ' + socket.id)
+        console.log('New user connected: ' + socket.id)
         const { error, user } = addUser({ id: socket.id, username, room })
 
         if (error) {
@@ -32,9 +30,9 @@ io.on('connection', (socket) => {
 
         socket.join(user.room);
 
-        socket.emit('message', generateMessage('Welcome!'));
+        socket.emit('message', generateMessage('Admin', 'Welcome!'));
         //broadcast.emit will broadcast to other clients, except the client sending it.
-        socket.broadcast.to(user.room).emit('message', generateMessage(`${user.username} has joined!`));
+        socket.broadcast.to(user.room).emit('message', generateMessage('Admin', `${user.username} has joined!`));
 
         callback();
 
@@ -45,7 +43,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         const user = removeUser(socket.id);
         if (user) {
-            io.to(user.room).emit('message', generateMessage(`${user.username} has left!`));
+            io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left!`));
         }
     });
 
@@ -54,14 +52,15 @@ io.on('connection', (socket) => {
         if (filter.isProfane(msg.text)) {
             return callback('Profanity is not allowed!');
         }
-        console.log('sendMessage', msg);
-        io.to('Center City').emit('message', generateMessage(msg.from, msg.text));
+        const user = getUser(socket.id);
+        io.to(user.room).emit('message', generateMessage(user.username, msg.text));
         callback();
     });
 
     socket.on('sendLocation', (coords, callback) => {
         console.log(coords);
-        io.emit('locationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        const user = getUser(socket.id);
+        io.to(user.room).emit('locationMessage', generateLocationMessage(user.username, coords.latitude, coords.longitude));
         callback();
     });
 });
